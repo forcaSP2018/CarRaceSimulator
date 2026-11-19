@@ -18,17 +18,22 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
 import javafx.scene.transform.Scale;
 
-public class RaceCarView extends BorderPane{
-    
+/**
+ * RaceCarView is responsible for displaying the graphical user interface. It
+ * creates the slideshow screen and the race screen. It also displays the
+ * buttons, speed slider and race results.
+ */
+public class RaceCarView extends BorderPane {
+
     public static final double START_X = 35;
     public static final double FINISH_X = 790;
     public static final double CAR_SCALE = 0.32;
     public static final double CAR_WIDTH = 300 * CAR_SCALE;
-    
+
     private Label greeting;
     private StackPane carDisplay;
     private Label carCounter;
-    private Label carType;    
+    private Label carType;
     private Button enterRaceButton;
     private Button startButton;
     private Button pauseButton;
@@ -38,21 +43,38 @@ public class RaceCarView extends BorderPane{
     private Label raceMessage;
     private Label resultsLabel;
     private Pane raceTrack;
+
+    /**
+     * Constructor that displays the slideshow screen when the view is first
+     * created.
+     */
     public RaceCarView() {
-       showSlideshowScreen();
+        showSlideshowScreen();
     }
-    
+
+    /**
+     * Updates the slideshow counter to show which car is currently being
+     * displayed.
+     *
+     * @param current the current car number
+     * @param total the total number of cars
+     */
     public void updateCounter(int current, int total) {
-    carCounter.setText(current + " of " + total);
-}
+        carCounter.setText(current + " of " + total);
+    }
+
+    /**
+     * Creates the welcome screen that displays the cars one at a time before
+     * entering the race.
+     */
     public void showSlideshowScreen() {
 
         setTop(null);
         setCenter(null);
         setBottom(null);
 
-        Label greeting =
-                new Label("Welcome to the Car Race Simulation!");
+        Label greeting
+                = new Label("Welcome to the Car Race Simulation!");
 
         greeting.setStyle(
                 "-fx-font-size: 24px; -fx-font-weight: bold;"
@@ -72,9 +94,9 @@ public class RaceCarView extends BorderPane{
         enterRaceButton = new Button("Enter Race");
 
         enterRaceButton.setStyle(
-                "-fx-background-color: #16a34a;" +
-                "-fx-text-fill: white;" +
-                "-fx-font-size: 16px;"
+                "-fx-background-color: #16a34a;"
+                + "-fx-text-fill: white;"
+                + "-fx-font-size: 16px;"
         );
 
         VBox slideshow = new VBox(
@@ -91,14 +113,17 @@ public class RaceCarView extends BorderPane{
 
         setCenter(slideshow);
     }
-    
-    
 
-
+    /**
+     * Displays the selected car in the slideshow. Removes the previous car and
+     * updates the car type.
+     *
+     * @param car the car to display
+     */
     public void setCar(Car car) {
 
         carDisplay.getChildren().clear();
-        
+
         car.getTransforms().clear();
         car.setLayoutX(0);
         car.setLayoutY(0);
@@ -106,14 +131,24 @@ public class RaceCarView extends BorderPane{
         carDisplay.getChildren().add(car);
         carType.setText(car.getType());
     }
-     public void setOnEnterRace(Runnable action) {
+
+    /**
+     * Connects the Enter Race button to an action provided by the controller.
+     *
+     * @param action the action to execute
+     */
+    public void setOnEnterRace(Runnable action) {
         enterRaceButton.setOnAction(event -> action.run());
     }
-     
-     
-     public void showRaceScreen(Car[] cars) {
 
-        // Remove the slideshow car first
+    /**
+     * Creates the main race screen containing the track, cars, control buttons,
+     * speed slider, and results.
+     *
+     * @param cars array containing all the cars
+     */
+    public void showRaceScreen(Car[] cars) {
+
         carDisplay.getChildren().clear();
 
         setTop(null);
@@ -149,14 +184,13 @@ public class RaceCarView extends BorderPane{
             raceTrack.getChildren().add(separator);
         }
 
-        
         Line startLine = new Line(
                 START_X, 0, START_X, 375
         );
 
         startLine.setStroke(Color.LIMEGREEN);
         startLine.setStrokeWidth(4);
-        
+
         Line finishLine = new Line(
                 FINISH_X, 0, FINISH_X, 375
         );
@@ -180,7 +214,7 @@ public class RaceCarView extends BorderPane{
                 startText,
                 finishText
         );
-        
+
         for (int i = 0; i < cars.length; i++) {
 
             Car car = cars[i];
@@ -191,13 +225,13 @@ public class RaceCarView extends BorderPane{
 
             raceTrack.getChildren().add(car);
         }
-        
+
         startButton = new Button("Start");
         pauseButton = new Button("Pause");
         resetButton = new Button("Reset");
 
         pauseButton.setDisable(true);
-        
+
         speedSlider = new Slider(0.5, 3.0, 1.0);
         speedSlider.setPrefWidth(180);
 
@@ -233,7 +267,7 @@ public class RaceCarView extends BorderPane{
 
         controls.setPadding(new Insets(15));
         controls.setPrefWidth(350);
-        
+
         raceMessage = new Label("Ready to race!");
 
         raceMessage.setStyle(
@@ -276,33 +310,63 @@ public class RaceCarView extends BorderPane{
         setCenter(raceLayout);
     }
 
+    /**
+     * Connects the Enter Race button to an action provided by the controller.
+     *
+     * @param action the action to execute
+     */
     public void setOnStart(Runnable action) {
         startButton.setOnAction(event -> action.run());
     }
 
+    /**
+     * Connects the Pause button to the controller.
+     *
+     * @param action the action to execute
+     */
     public void setOnPause(Runnable action) {
         pauseButton.setOnAction(event -> action.run());
     }
 
+    /**
+     * Connects the Reset button to the controller.
+     *
+     * @param action the action to execute
+     */
     public void setOnReset(Runnable action) {
         resetButton.setOnAction(event -> action.run());
     }
 
+    
     public double getSimulationSpeed() {
         return speedSlider.getValue();
     }
 
+    
     public void setRaceMessage(String message) {
         raceMessage.setText(message);
     }
 
+    /**
+     * Updates the finishing order displayed on the screen.
+     *
+     * @param results the race results
+     */
     public void setResults(String results) {
         resultsLabel.setText(results);
     }
-
+    
+    /**
+     * Enables or disables the race control buttons
+     * depending on the current state of the race.
+     *
+     * @param running whether the race has started
+     * @param paused whether the race is paused
+     * @param finished whether the race is finished
+     */
     public void setRaceControls(boolean running,
-                                boolean paused,
-                                boolean finished) {
+            boolean paused,
+            boolean finished) {
 
         startButton.setDisable(running || finished);
 
@@ -311,5 +375,5 @@ public class RaceCarView extends BorderPane{
         pauseButton.setText(
                 paused ? "Resume" : "Pause"
         );
-     }
+    }
 }

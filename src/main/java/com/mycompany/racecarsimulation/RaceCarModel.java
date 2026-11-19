@@ -8,8 +8,11 @@ import java.util.Random;
 import javafx.scene.paint.Color;
 
 /**
+ * RaceCarModel stores the information for each race car.
+ * It keeps track of the car's type, number, color,
+ * position, and speed.
  *
- * @author julia
+ * This class does not handle any graphical animations.
  */
 public class RaceCarModel {
     private String type;
@@ -19,7 +22,14 @@ public class RaceCarModel {
     private double speed;
     private Color color;
     private static final Random random = new Random();
-
+  /**
+     * Constructor that initializes the car's information.
+     * The position starts at zero and a random speed is generated.
+     *
+     * @param type the name of the car
+     * @param number the racing number
+     * @param color the color of the car
+     */
     public RaceCarModel(String type, int number, Color color) {
         this.type = type;
         this.number = number;
@@ -32,6 +42,10 @@ public class RaceCarModel {
         generateRandomSpeed();
     }
     
+    /**
+     * Generates a random speed between 50 and 200.
+     * A new speed is generated whenever this method is called.
+     */
     public void generateRandomSpeed() {
     speed = random.nextInt(151) + 50 ;
 }

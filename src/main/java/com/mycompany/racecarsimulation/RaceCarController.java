@@ -14,7 +14,12 @@ import javafx.util.Duration;
 
 
 
-
+/**
+ * RaceCarController manages the simulation's logic.
+ * It connects the RaceCarModel and RaceCarView classes.
+ * It controls the slideshow, car movement, race buttons,
+ * finishing order, and winner determination.
+ */
 public class RaceCarController {
     private RaceCarView view;
 
@@ -34,7 +39,13 @@ public class RaceCarController {
     private List<Integer> finishingOrder;
 
     private static final double FRAME_SECONDS = 0.02;
-
+    
+    /**
+     * Constructor that creates the five race cars,
+     * initializes their models, and connects the view.
+     *
+     * @param view the graphical interface of the simulation
+     */
     public RaceCarController(RaceCarView view) {
 
         this.view = view;
@@ -88,7 +99,10 @@ public class RaceCarController {
         view.setOnEnterRace(() -> enterRace());
     }
 
-    
+    /**
+     * Starts the slideshow and changes the displayed
+     * car every three seconds using a Timeline.
+     */
     public void startSlideshow() {
 
         cars[currentIndex].startTires();
@@ -104,7 +118,10 @@ public class RaceCarController {
         slideshow.play();
     }
 
-    
+    /**
+     * Displays the next car in the slideshow.
+     * Returns to the first car after the last car.
+     */
     private void nextCar() {
 
         cars[currentIndex].stopTires();
@@ -125,7 +142,10 @@ public class RaceCarController {
         cars[currentIndex].startTires();
     }
 
-   
+   /**
+     * Stops the slideshow and prepares the race screen.
+     * Connects the buttons and creates the race timeline.
+     */
     private void enterRace() {
 
         slideshow.stop();
@@ -152,7 +172,10 @@ public class RaceCarController {
         resetRace();
     }
 
-    
+    /**
+     * Starts the race and begins moving the cars.
+     * Prevents the race from starting more than once.
+     */
     private void startRace() {
 
         if (raceFinished || raceStarted) {
@@ -176,7 +199,10 @@ public class RaceCarController {
         raceTimeline.play();
     }
 
-    // Pause or resume racing
+    /**
+     * Pauses or resumes the race and tire animations.
+     * Updates the race message and button states.
+     */
     private void pauseRace() {
 
         if (!raceStarted || raceFinished) {
@@ -216,7 +242,12 @@ public class RaceCarController {
         }
     }
 
-    // Reset race and generate NEW random speeds
+    /**
+     * Resets the race by returning all cars to their
+     * starting positions and generating new random speeds.
+     * Also clears the previous results.
+     */
+
     private void resetRace() {
 
         if (raceTimeline != null) {
@@ -256,7 +287,12 @@ public class RaceCarController {
         view.setRaceControls(false, false, false);
     }
 
-    
+    /**
+     * Updates the position of every car during the race.
+     * Calculates movement using speed, multiplier, and time.
+     * Checks for cars crossing the finish line and records
+     * the finishing order.
+     */
     private void updateRace() {
 
         double speedMultiplier =
@@ -334,7 +370,10 @@ public class RaceCarController {
         }
     }
 
-   
+   /**
+     * Creates a list of the cars that have finished
+     * and displays their finishing positions.
+     */
     private void updateResults() {
 
         StringBuilder results = new StringBuilder();
@@ -363,7 +402,7 @@ public class RaceCarController {
         view.setResults(results.toString());
     }
 
-   
+  
     private String getColorName(Color color) {
 
         if (color.equals(Color.RED)) {
@@ -381,7 +420,10 @@ public class RaceCarController {
         return "Unknown";
     }
 
-   
+   /**
+     * Stops all running timelines and tire animations.
+     * Used to clean up the simulation when it is closed.
+     */
     public void dispose() {
 
         if (slideshow != null) {

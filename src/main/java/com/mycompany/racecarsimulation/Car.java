@@ -17,13 +17,29 @@ import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.util.Duration;
 
-public class Car extends Group{
-private Group frontTire;
-private Group backTire;
+/**
+ * Car creates the graphical representation of a race car. It uses JavaFX shapes
+ * to draw the body, windows, number, and tires. It also controls the tire
+ * rotation animations.
+ */
+public class Car extends Group {
 
-private RotateTransition frontRotation;
-private RotateTransition backRotation;
-private String type;
+    private Group frontTire;
+    private Group backTire;
+
+    private RotateTransition frontRotation;
+    private RotateTransition backRotation;
+    private String type;
+    
+    /**
+     * Constructor that creates a car using JavaFX shapes.
+     *
+     * @param x the starting horizontal position
+     * @param y the starting vertical position
+     * @param color the color of the car's body
+     * @param number the racing number displayed on the car
+     * @param type the name of the car
+     */
     public Car(double x, double y, Color color, int number, String type) {
 
         setLayoutX(x);
@@ -46,7 +62,6 @@ private String type;
         body.setFill(color);
         body.setStroke(Color.BLACK);
 
-        
         Polygon leftWindow = new Polygon(
                 115.0, 20.0,
                 155.0, 20.0,
@@ -56,7 +71,6 @@ private String type;
 
         leftWindow.setFill(Color.LIGHTBLUE);
 
-        
         Polygon rightWindow = new Polygon(
                 165.0, 20.0,
                 205.0, 20.0,
@@ -66,13 +80,11 @@ private String type;
 
         rightWindow.setFill(Color.LIGHTBLUE);
 
-        
-        Rectangle numberBackground =
-                new Rectangle(145, 60, 50, 30);
+        Rectangle numberBackground
+                = new Rectangle(145, 60, 50, 30);
 
         numberBackground.setFill(Color.WHITE);
 
-        
         Text carNumber = new Text(
                 155, 83, String.valueOf(number)
         );
@@ -80,11 +92,9 @@ private String type;
         carNumber.setFont(Font.font(22));
         carNumber.setFill(Color.BLACK);
 
-        
         backTire = createTire(80, 100);
         frontTire = createTire(240, 100);
 
-       
         getChildren().addAll(
                 body,
                 leftWindow,
@@ -95,12 +105,18 @@ private String type;
                 frontTire
         );
 
-        
         frontRotation = createRotation(frontTire);
         backRotation = createRotation(backTire);
     }
-
     
+    /**
+     * Creates a tire using circles and lines.
+     * The shapes are grouped so they rotate together.
+     *
+     * @param x the horizontal position of the tire
+     * @param y the vertical position of the tire
+     * @return the completed tire Group
+     */
     private Group createTire(double x, double y) {
 
         Group tire = new Group();
@@ -135,13 +151,19 @@ private String type;
     }
 
     public String getType() {
-    return type;
+        return type;
     }
-    
+    /**
+     * Creates a continuous rotation animation for a tire.
+     * The tire rotates 360 degrees every second.
+     *
+     * @param tire the tire Group to animate
+     * @return the tire's RotateTransition
+     */
     private RotateTransition createRotation(Group tire) {
 
-        RotateTransition rotation =
-                new RotateTransition(Duration.seconds(1), tire);
+        RotateTransition rotation
+                = new RotateTransition(Duration.seconds(1), tire);
 
         rotation.setByAngle(360);
         rotation.setCycleCount(Animation.INDEFINITE);
@@ -149,24 +171,30 @@ private String type;
 
         return rotation;
     }
-
-    
+    /**
+     * starts the wheels animation
+    */
     public void startTires() {
         frontRotation.play();
         backRotation.play();
     }
-
-   
+    /**
+     * ends the animation for the wheels
+     */
     public void stopTires() {
         frontRotation.stop();
         backRotation.stop();
-    }    
-    
+    }
+    /**
+     * pauses the animation for the wheels
+     */
     public void pauseTires() {
         backRotation.pause();
         frontRotation.pause();
     }
-
+    /**
+     * resets the animation for the wheels
+     */
     public void resetTires() {
         backRotation.stop();
         frontRotation.stop();
