@@ -19,17 +19,17 @@ import javafx.util.Duration;
 
 public class Car extends Group{
 private Group frontTire;
-    private Group backTire;
+private Group backTire;
 
-    private RotateTransition frontRotation;
-    private RotateTransition backRotation;
-
-    public Car(double x, double y, Color color, int number) {
+private RotateTransition frontRotation;
+private RotateTransition backRotation;
+private String type;
+    public Car(double x, double y, Color color, int number, String type) {
 
         setLayoutX(x);
         setLayoutY(y);
 
-        
+        this.type = type;
         Polygon body = new Polygon(
                 20.0, 80.0,
                 35.0, 50.0,
@@ -134,6 +134,9 @@ private Group frontTire;
         return tire;
     }
 
+    public String getType() {
+    return type;
+    }
     
     private RotateTransition createRotation(Group tire) {
 
