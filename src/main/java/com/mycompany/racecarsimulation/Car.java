@@ -161,4 +161,17 @@ private String type;
         frontRotation.stop();
         backRotation.stop();
     }    
+    
+    public void pauseTires() {
+        backRotation.pause();
+        frontRotation.pause();
+    }
+
+    public void resetTires() {
+        backRotation.stop();
+        frontRotation.stop();
+
+        backRotation.getNode().setRotate(0);
+        frontRotation.getNode().setRotate(0);
+    }
 }

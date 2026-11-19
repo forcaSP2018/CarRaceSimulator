@@ -4,6 +4,9 @@
  */
 package com.mycompany.racecarsimulation;
 
+import java.util.ArrayList;
+import java.util.List;
+import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.scene.paint.Color;
@@ -14,56 +17,383 @@ import javafx.util.Duration;
 
 public class RaceCarController {
     private RaceCarView view;
-    
 
+    private RaceCarModel[] models;
     private Car[] cars;
 
     private int currentIndex = 0;
 
     private Timeline slideshow;
+    private Timeline raceTimeline;
+
+    private boolean raceStarted = false;
+    private boolean paused = false;
+    private boolean raceFinished = false;
+
+    private boolean[] finishedCars;
+    private List<Integer> finishingOrder;
+
+    private static final double FRAME_SECONDS = 0.02;
 
     public RaceCarController(RaceCarView view) {
 
         this.view = view;
 
-        cars = new Car[5];
+        
+        models = new RaceCarModel[5];
 
-        cars[0] = new Car(0, 0, Color.RED, 45, "Ferrari");
-        cars[1] = new Car(0, 0, Color.BLUE, 12, "Lamborghini");
-        cars[2] = new Car(0, 0, Color.GREEN, 27, "Porsche");
-        cars[3] = new Car(0, 0, Color.YELLOW, 8, "McLaren");
-        cars[4] = new Car(0, 0, Color.PURPLE, 99, "Mercedes");
+        models[0] = new RaceCarModel(
+                "Ferrari", 45, Color.RED
+        );
+
+        models[1] = new RaceCarModel(
+                "Lamborghini", 12, Color.BLUE
+        );
+
+        models[2] = new RaceCarModel(
+                "Porsche", 27, Color.GREEN
+        );
+
+        models[3] = new RaceCarModel(
+                "McLaren", 8, Color.YELLOW
+        );
+
+        models[4] = new RaceCarModel(
+                "Bugatti", 99, Color.PURPLE
+        );
+
+        
+        cars = new Car[models.length];
+
+        for (int i = 0; i < models.length; i++) {
+
+            RaceCarModel model = models[i];
+
+            cars[i] = new Car(
+                    0,
+                    0,
+                    model.getColor(),
+                    model.getNumber(),
+                    model.getType()
+            );
+        }
+
+        finishedCars = new boolean[cars.length];
+
+        finishingOrder = new ArrayList<>();
 
         view.setCar(cars[0]);
         view.updateCounter(1, cars.length);
+
+        view.setOnEnterRace(() -> enterRace());
     }
 
+    
     public void startSlideshow() {
 
         cars[currentIndex].startTires();
 
-        slideshow = new Timeline(new KeyFrame(
-        Duration.seconds(3),
-        event -> nextCar())
+        slideshow = new Timeline(
+                new KeyFrame(
+                        Duration.seconds(3),
+                        event -> nextCar()
+                )
         );
 
-        slideshow.setCycleCount(Timeline.INDEFINITE);
+        slideshow.setCycleCount(Animation.INDEFINITE);
         slideshow.play();
     }
 
-    private void nextCar() {       
-    cars[currentIndex].stopTires();
+    
+    private void nextCar() {
 
-    currentIndex++;
+        cars[currentIndex].stopTires();
 
-    if (currentIndex >= cars.length) {
-        currentIndex = 0;
+        currentIndex++;
+
+        if (currentIndex >= cars.length) {
+            currentIndex = 0;
+        }
+
+        view.setCar(cars[currentIndex]);
+
+        view.updateCounter(
+                currentIndex + 1,
+                cars.length
+        );
+
+        cars[currentIndex].startTires();
     }
 
-    view.setCar(cars[currentIndex]);
+   
+    private void enterRace() {
 
-    view.updateCounter(currentIndex + 1, cars.length);
+        slideshow.stop();
 
-    cars[currentIndex].startTires();
+        for (Car car : cars) {
+            car.stopTires();
+        }
+
+        view.showRaceScreen(cars);
+
+        view.setOnStart(() -> startRace());
+        view.setOnPause(() -> pauseRace());
+        view.setOnReset(() -> resetRace());
+
+        raceTimeline = new Timeline(
+                new KeyFrame(
+                        Duration.seconds(FRAME_SECONDS),
+                        event -> updateRace()
+                )
+        );
+
+        raceTimeline.setCycleCount(Animation.INDEFINITE);
+
+        resetRace();
+    }
+
+    
+    private void startRace() {
+
+        if (raceFinished || raceStarted) {
+            return;
+        }
+
+        raceStarted = true;
+        paused = false;
+
+        view.setRaceMessage("Race in progress!");
+
+        view.setRaceControls(true, false, false);
+
+        for (int i = 0; i < cars.length; i++) {
+
+            if (!finishedCars[i]) {
+                cars[i].startTires();
+            }
+        }
+
+        raceTimeline.play();
+    }
+
+    // Pause or resume racing
+    private void pauseRace() {
+
+        if (!raceStarted || raceFinished) {
+            return;
+        }
+
+        if (!paused) {
+
+            raceTimeline.pause();
+
+            for (Car car : cars) {
+                car.pauseTires();
+            }
+
+            paused = true;
+
+            view.setRaceMessage("Race paused!");
+
+            view.setRaceControls(true, true, false);
+
+        } else {
+
+            raceTimeline.play();
+
+            for (int i = 0; i < cars.length; i++) {
+
+                if (!finishedCars[i]) {
+                    cars[i].startTires();
+                }
+            }
+
+            paused = false;
+
+            view.setRaceMessage("Race in progress!");
+
+            view.setRaceControls(true, false, false);
+        }
+    }
+
+    // Reset race and generate NEW random speeds
+    private void resetRace() {
+
+        if (raceTimeline != null) {
+            raceTimeline.stop();
+        }
+
+        raceStarted = false;
+        paused = false;
+        raceFinished = false;
+
+        finishingOrder.clear();
+
+        for (int i = 0; i < cars.length; i++) {
+
+            finishedCars[i] = false;
+
+            
+            models[i].generateRandomSpeed();
+
+            double startX = RaceCarView.START_X;
+            double laneY = i * 75 + 15;
+
+            models[i].setPosition(startX, laneY);
+
+            cars[i].setLayoutX(startX);
+            cars[i].setLayoutY(laneY);
+
+            cars[i].resetTires();
+        }
+
+        view.setRaceMessage("Ready to race!");
+
+        view.setResults(
+                "Waiting for race results..."
+        );
+
+        view.setRaceControls(false, false, false);
+    }
+
+    
+    private void updateRace() {
+
+        double speedMultiplier =
+                view.getSimulationSpeed();
+
+        for (int i = 0; i < cars.length; i++) {
+
+            if (finishedCars[i]) {
+                continue;
+            }
+
+            RaceCarModel model = models[i];
+
+           
+            double distance =
+                    model.getSpeed()
+                    * speedMultiplier
+                    * FRAME_SECONDS;
+
+            double newX = model.getX() + distance;
+
+            
+            double finishPosition =
+                    RaceCarView.FINISH_X
+                    - RaceCarView.CAR_WIDTH;
+
+            if (newX >= finishPosition) {
+
+                newX = finishPosition;
+
+                finishedCars[i] = true;
+
+                finishingOrder.add(i);
+
+                cars[i].stopTires();
+
+               
+                if (finishingOrder.size() == 1) {
+
+                    view.setRaceMessage(
+                            "Winner: "
+                            + model.getType()
+                            + " - Car #"
+                            + model.getNumber()
+                    );
+                }
+            }
+
+            model.setPosition(newX, model.getY());
+
+            cars[i].setLayoutX(newX);
+        }
+
+        updateResults();
+
+        
+        if (finishingOrder.size() == cars.length) {
+
+            raceTimeline.stop();
+
+            raceStarted = false;
+            raceFinished = true;
+
+            RaceCarModel winner =
+                    models[finishingOrder.get(0)];
+
+            view.setRaceMessage(
+                    "Congratulations! Car #"
+                    + winner.getNumber()
+                    + " (" + getColorName(winner.getColor())
+                    + ") wins!"
+            );
+
+            view.setRaceControls(false, false, true);
+        }
+    }
+
+   
+    private void updateResults() {
+
+        StringBuilder results = new StringBuilder();
+
+        for (int i = 0; i < finishingOrder.size(); i++) {
+
+            int carIndex = finishingOrder.get(i);
+
+            RaceCarModel model = models[carIndex];
+
+            results.append(i + 1)
+                    .append(". ")
+                    .append(model.getType())
+                    .append(" - Car #")
+                    .append(model.getNumber())
+                    .append(" (")
+                    .append(getColorName(model.getColor()))
+                    .append(")")
+                    .append("\n");
+        }
+
+        if (finishingOrder.isEmpty()) {
+            results.append("Race in progress...");
+        }
+
+        view.setResults(results.toString());
+    }
+
+   
+    private String getColorName(Color color) {
+
+        if (color.equals(Color.RED)) {
+            return "Red";
+        } else if (color.equals(Color.BLUE)) {
+            return "Blue";
+        } else if (color.equals(Color.GREEN)) {
+            return "Green";
+        } else if (color.equals(Color.YELLOW)) {
+            return "Yellow";
+        } else if (color.equals(Color.PURPLE)) {
+            return "Purple";
+        }
+
+        return "Unknown";
+    }
+
+   
+    public void dispose() {
+
+        if (slideshow != null) {
+            slideshow.stop();
+        }
+
+        if (raceTimeline != null) {
+            raceTimeline.stop();
+        }
+
+        for (Car car : cars) {
+            car.stopTires();
+        }
     }
 }

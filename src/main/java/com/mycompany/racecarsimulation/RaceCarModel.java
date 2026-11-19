@@ -4,6 +4,9 @@
  */
 package com.mycompany.racecarsimulation;
     
+import java.util.Random;
+import javafx.scene.paint.Color;
+
 /**
  *
  * @author julia
@@ -14,18 +17,24 @@ public class RaceCarModel {
     private double x;
     private double y;
     private double speed;
-    private String color;
-    
+    private Color color;
+    private static final Random random = new Random();
 
-    public RaceCarModel(String type, int number, String color) {
+    public RaceCarModel(String type, int number, Color color) {
         this.type = type;
         this.number = number;
         this.color = color;
 
         x = 0;
         y = 0;
-        speed = 0;
+        
+        
+        generateRandomSpeed();
     }
+    
+    public void generateRandomSpeed() {
+    speed = random.nextInt(151) + 50 ;
+}
 
     public String getType() {
         return type;
@@ -35,7 +44,7 @@ public class RaceCarModel {
         return number;
     }
 
-    public String getColor() {
+    public Color getColor() {
         return color;
     }
 
